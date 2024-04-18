@@ -1,7 +1,4 @@
-// UNO
-#define __AVR_ATmega328P__
-
-#include "include/keypad.h"
+#include <keypad.h>
 
 const char correctPasscode[4] = {'1','2','3','4'};
 
@@ -78,7 +75,6 @@ int unlockedState(void) {
 
 int alarmState() {
   // TODO get input for correct password?
-  int buzzer = 0;
   while (1) {
     buzzer = 1000;
   }
