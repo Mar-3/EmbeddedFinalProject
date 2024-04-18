@@ -8,7 +8,7 @@ const char correctPasscode[4] = {'1','2','3','4'};
 
 // Used as reference for keypad https://arduinogetstarted.com/tutorials/arduino-keypad
 const int ROW_NUM = 4; //four rows
-const int COLUMN_NUM = 3; //three columns
+const int COLUMN_NUM = 4; //three columns
 
 // Keyboard inputs
 char keys[ROW_NUM][COLUMN_NUM] = {
@@ -19,8 +19,8 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 };
 
 
-byte pin_rows[ROW_NUM] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
-byte pin_column[COLUMN_NUM] = {5, 4, 3, 2}; //connect to the column pinouts of the keypad
+uint8_t pin_rows[ROW_NUM] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
+uint8_t pin_column[COLUMN_NUM] = {5, 4, 3, 2}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
 
@@ -47,11 +47,11 @@ enum boardStates armedState(int sensorValue) {
 
 // Get input from keypad, return input when 4 digits are inputted
 enum boardStates getInput(char* input[]) {
-  char key = keypad.getKey();
+  char key = keypad.GetKey();
   if (key) {
     // TODO add inputted key to the end of array (Dynamic array?)
-    char input[sizeOf(input) / sizeOf(char) + 1] = key;
-    if (sizeOf(input) / sizeOf(char)) {
+    char input[sizeof(input) / sizeof(char) + 1] = key;
+    if (sizeof(input) / sizeof(char)) {
       return checkInput;
     }
   }
@@ -61,14 +61,14 @@ enum boardStates getInput(char* input[]) {
 
 enum boardStates chekcInput(char input[]) {
   if (correctPasscode == input) {
-    return unlockedState;
+    return unlocked;
   }
   return alarm;
 }
 
 int unlockedState(void) {
   // TODO show username on screen
-  char key = keypad.getKey();
+  char key = keypad.GetKey();
   if (key == 'A') {
     return armed;
   }
