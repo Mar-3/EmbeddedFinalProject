@@ -3,15 +3,14 @@
 
 #include "include/keypad.h"
 
-const char correctPasscode[4] = {'1','2','3','4'};
-
+static char correctPasscode[4] = {'1','2','3','4'};
 
 // Used as reference for keypad https://arduinogetstarted.com/tutorials/arduino-keypad
-const int ROW_NUM = 4; //four rows
-const int COLUMN_NUM = 4; //three columns
+#define ROW_NUM 4 //four rows
+#define COLUMN_NUM 4 //three columns
 
 // Keyboard inputs
-char keys[ROW_NUM][COLUMN_NUM] = {
+static char keys[ROW_NUM][COLUMN_NUM] = {
   {'1','2','3', 'A'},
   {'4','5','6', 'B'},
   {'7','8','9', 'C'},
@@ -29,10 +28,10 @@ Keypad keypad = Keypad( makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_
 enum boardStates {
   armed,
   timer,
-  checkInput,
+  checkingInput,
   unlocked,
   alarm
-}
+};
 
 // Board state used when device is armed 
 enum boardStates armedState(int sensorValue) {
@@ -42,38 +41,38 @@ enum boardStates armedState(int sensorValue) {
     return timer;
   }
   return armed;
-}
+};
 
 
 // Get input from keypad, return input when 4 digits are inputted
 enum boardStates getInput(char* input[]) {
-  char key = keypad.GetKey();
+  char key = keypad_GetKey();
   if (key) {
     // TODO add inputted key to the end of array (Dynamic array?)
     char input[sizeof(input) / sizeof(char) + 1] = key;
     if (sizeof(input) / sizeof(char)) {
-      return checkInput;
+      return checkingInput;
     }
   }
   return timer;
   
-}
+};
 
-enum boardStates chekcInput(char input[]) {
+enum boardStates checkInput(char input[]) {
   if (correctPasscode == input) {
     return unlocked;
   }
   return alarm;
-}
+};
 
 int unlockedState(void) {
   // TODO show username on screen
-  char key = keypad.GetKey();
+  char key = keypad_GetKey();
   if (key == 'A') {
     return armed;
   }
   return unlocked;
-}
+};
 
 
 int alarmState() {
@@ -83,11 +82,11 @@ int alarmState() {
     buzzer = 1000;
   }
 
-}
+};
 
 int main(void) {
   enum boardStates state = unlocked;
   while (1) {
 
   }
-}
+};
