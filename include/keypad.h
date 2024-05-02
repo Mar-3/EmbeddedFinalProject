@@ -45,6 +45,7 @@ Errors and omissions should be reported to codelibraries@exploreembedded.com
 #include "stdutils.h"
 
 
+
 /***************************************************************************************************
                                  Hex-Keypad PORT Configuration
  ***************************************************************************************************/
@@ -60,10 +61,10 @@ Errors and omissions should be reported to codelibraries@exploreembedded.com
 /***************************************************************************************************
                              Function Prototypes
  ***************************************************************************************************/
-void KEYPAD_Init();
-void KEYPAD_WaitForKeyRelease();
-void KEYPAD_WaitForKeyPress();
-uint8_t KEYPAD_GetKey();
+void KEYPAD_Init(void);
+void KEYPAD_WaitForKeyRelease(void);
+void KEYPAD_WaitForKeyPress(void);
+uint8_t KEYPAD_GetKey(void);
 /**************************************************************************************************/
 
 #endif

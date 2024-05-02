@@ -1,0 +1,139 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               		.section	.rodata.armedState.str1.1,"aMS",@progbits,1
+   9               	.LC0:
+  10 0000 4D6F 7665 		.string	"Movement detected, switching to timer"
+  10      6D65 6E74 
+  10      2064 6574 
+  10      6563 7465 
+  10      642C 2073 
+  11               		.section	.text.armedState,"ax",@progbits
+  12               	.global	armedState
+  14               	armedState:
+  15               	/* prologue: function */
+  16               	/* frame size = 0 */
+  17               	/* stack size = 0 */
+  18               	.L__stack_usage = 0
+  19 0000 893E      		cpi r24,-23
+  20 0002 9340      		sbci r25,3
+  21 0004 04F0      		brlt .L3
+  22 0006 80E0      		ldi r24,lo8(.LC0)
+  23 0008 90E0      		ldi r25,hi8(.LC0)
+  24 000a 9F93      		push r25
+  25 000c 8F93      		push r24
+  26 000e 0E94 0000 		call printf
+  27 0012 0F90      		pop __tmp_reg__
+  28 0014 0F90      		pop __tmp_reg__
+  29 0016 81E0      		ldi r24,lo8(1)
+  30 0018 0895      		ret
+  31               	.L3:
+  32 001a 80E0      		ldi r24,0
+  33               	/* epilogue start */
+  34 001c 0895      		ret
+  36               		.section	.text.getInputState,"ax",@progbits
+  37               	.global	getInputState
+  39               	getInputState:
+  40               	/* prologue: function */
+  41               	/* frame size = 0 */
+  42               	/* stack size = 0 */
+  43               	.L__stack_usage = 0
+  44 0000 81E6      		ldi r24,lo8(97)
+  45 0002 90E0      		ldi r25,0
+  46 0004 0E94 0000 		call putchar
+  47 0008 82E0      		ldi r24,lo8(2)
+  48               	/* epilogue start */
+  49 000a 0895      		ret
+  51               		.section	.text.checkInputState,"ax",@progbits
+  52               	.global	checkInputState
+  54               	checkInputState:
+  55               	/* prologue: function */
+  56               	/* frame size = 0 */
+  57               	/* stack size = 0 */
+  58               	.L__stack_usage = 0
+  59 0000 8050      		subi r24,lo8(correctPasscode)
+  60 0002 9040      		sbci r25,hi8(correctPasscode)
+  61 0004 01F0      		breq .L7
+  62 0006 84E0      		ldi r24,lo8(4)
+  63 0008 0895      		ret
+  64               	.L7:
+  65 000a 83E0      		ldi r24,lo8(3)
+  66               	/* epilogue start */
+  67 000c 0895      		ret
+  69               		.section	.text.unlockedState,"ax",@progbits
+  70               	.global	unlockedState
+  72               	unlockedState:
+  73               	/* prologue: function */
+  74               	/* frame size = 0 */
+  75               	/* stack size = 0 */
+  76               	.L__stack_usage = 0
+  77 0000 80E0      		ldi r24,0
+  78 0002 90E0      		ldi r25,0
+  79               	/* epilogue start */
+  80 0004 0895      		ret
+  82               		.section	.rodata.alarmState.str1.1,"aMS",@progbits,1
+  83               	.LC1:
+  84 0000 2564 00   		.string	"%d"
+  85               		.section	.text.alarmState,"ax",@progbits
+  86               	.global	alarmState
+  88               	alarmState:
+  89               	/* prologue: function */
+  90               	/* frame size = 0 */
+  91               	/* stack size = 0 */
+  92               	.L__stack_usage = 0
+  93 0000 03E0      		ldi r16,lo8(3)
+  94 0002 18EE      		ldi r17,lo8(-24)
+  95 0004 C0E0      		ldi r28,lo8(.LC1)
+  96 0006 D0E0      		ldi r29,hi8(.LC1)
+  97               	.L10:
+  98 0008 0F93      		push r16
+  99 000a 1F93      		push r17
+ 100 000c DF93      		push r29
+ 101 000e CF93      		push r28
+ 102 0010 0E94 0000 		call printf
+ 103 0014 0F90      		pop __tmp_reg__
+ 104 0016 0F90      		pop __tmp_reg__
+ 105 0018 0F90      		pop __tmp_reg__
+ 106 001a 0F90      		pop __tmp_reg__
+ 107 001c 00C0      		rjmp .L10
+ 109               		.section	.text.startup.main,"ax",@progbits
+ 110               	.global	main
+ 112               	main:
+ 113               	/* prologue: function */
+ 114               	/* frame size = 0 */
+ 115               	/* stack size = 0 */
+ 116               	.L__stack_usage = 0
+ 117               	.L12:
+ 118 0000 00C0      		rjmp .L12
+ 120               		.section	.data.correctPasscode,"aw"
+ 123               	correctPasscode:
+ 124 0000 3132 3334 		.ascii	"1234"
+ 125               		.ident	"GCC: (GNU) 13.2.0"
+ 126               	.global __do_copy_data
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/cc0cqX2x.s:2      *ABS*:0000003e __SP_H__
+     /tmp/cc0cqX2x.s:3      *ABS*:0000003d __SP_L__
+     /tmp/cc0cqX2x.s:4      *ABS*:0000003f __SREG__
+     /tmp/cc0cqX2x.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/cc0cqX2x.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/cc0cqX2x.s:14     .text.armedState:00000000 armedState
+     /tmp/cc0cqX2x.s:39     .text.getInputState:00000000 getInputState
+     /tmp/cc0cqX2x.s:54     .text.checkInputState:00000000 checkInputState
+     /tmp/cc0cqX2x.s:123    .data.correctPasscode:00000000 correctPasscode
+     /tmp/cc0cqX2x.s:72     .text.unlockedState:00000000 unlockedState
+     /tmp/cc0cqX2x.s:88     .text.alarmState:00000000 alarmState
+     /tmp/cc0cqX2x.s:112    .text.startup.main:00000000 main
+     /tmp/cc0cqX2x.s:31     .text.armedState:0000001a .L3
+     /tmp/cc0cqX2x.s:64     .text.checkInputState:0000000a .L7
+     /tmp/cc0cqX2x.s:97     .text.alarmState:00000008 .L10
+     /tmp/cc0cqX2x.s:117    .text.startup.main:00000000 .L12
+
+UNDEFINED SYMBOLS
+printf
+putchar
+__do_copy_data
