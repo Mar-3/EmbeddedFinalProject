@@ -1,3 +1,7 @@
+# Used https://wiki.archlinux.org/title/AVR
+# TODO should probably get the external libraries from
+# a folder, this is messy right now
+
 CC = avr-gcc
 OBJCOPY = avr-objcopy
 SIZE = avr-size
@@ -11,8 +15,8 @@ F_CPU = 8000000
 LFUSE = 0x9f
 HFUSE = 0xd1
 
-TARGET = firmware
-SRC = main.c 
+TARGET = unoFirmware
+SRC = main.c keypad.c delay.c
 OBJ = $(SRC:.c=.o)
 LST = $(SRC:.c=.lst)
 
@@ -36,15 +40,12 @@ LDFLAGS = -Wl,--gc-sections
 LDFLAGS += -Wl,--print-gc-sections
 
 AVRDUDE_MCU = atmega328p
-AVRDUDE_PROGRAMMER = arduino 
-AVRDUDE_SPEED = -b 57600
+AVRDUDE_PROGRAMMER = arduino
+AVRDUDE_SPEED = -B9600
 
-AVRDUDE_FLAGS = -v -p $(AVRDUDE_MCU)
+AVRDUDE_FLAGS = -p $(AVRDUDE_MCU)
 AVRDUDE_FLAGS += -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_SPEED)
-AVRDUDE_FLAGS += -D
-AVRDUDE_FLAGS += -U
-AVRDUDE_FLAGS += flash:w:firmware.hex:i
 
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
@@ -56,12 +57,10 @@ all: gccversion $(TARGET).elf $(TARGET).hex size
 .PRECIOUS: $(OBJ)
 
 %.hex: %.elf
-	@echo
 	@echo $(MSG_FLASH) $@
 	$(OBJCOPY) -O $(FORMAT) -j .text -j .data $< $@
 
 %.elf: $(OBJ)
-	@echo
 	@echo $(MSG_LINKING) $@
 	$(CC) -mmcu=$(MCU) $(LDFLAGS) $^ --output $(@F)
 

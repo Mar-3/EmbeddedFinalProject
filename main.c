@@ -1,35 +1,78 @@
 // UNO
 
-#include "include/keypad.h"
+#define __AVR_ATmega328P__
+#define F_CPU 16000000UL
+#define FOSC 16000000UL // Clock Speed
+#define BAUD 57600
+#define MYUBRR (FOSC/16/BAUD-1)
+
+#include <avr/io.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <util/setbaud.h>
+#include <string.h>
+#include "keypad.h"
+#include "delay.h"
 
-static char correctPasscode[4] = {'1','2','3','4'};
-
-// Used as reference for keypad https://arduinogetstarted.com/tutorials/arduino-keypad
-// Actually not used, the keypad library differs a lot
-/*
-#define ROW_NUM 4 //four rows
-#define COLUMN_NUM 4 //three columns
-
-// Keyboard inputs
-static char keys[ROW_NUM][COLUMN_NUM] = {
-  {'1','2','3', 'A'},
-  {'4','5','6', 'B'},
-  {'7','8','9', 'C'},
-  {'*','0','#', 'D'}
-};
-uint8_t pin_rows[ROW_NUM] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
-uint8_t pin_column[COLUMN_NUM] = {5, 4, 3, 2}; //connect to the column pinouts of the keypad
-*/
+static char correctPasscode[] = "1234";
 
 // Board states in enum
 enum boardStates {
   armed,
   timer,
-  checkingInput,
   unlocked,
   alarm
 };
+
+// NOTE: USART = Universal Synchronous Asynchronous Receiver Transmitter
+//       UART  = Universal Asynchronous Receiver Transmitter
+
+static void 
+USART_init(uint16_t ubrr) // unsigned int
+{
+    /* Set baud rate in the USART Baud Rate Registers (UBRR) */
+    UBRR0H = (unsigned char) (ubrr >> 8);
+    UBRR0L = (unsigned char) ubrr;
+    
+    /* Enable receiver and transmitter on RX0 and TX0 */
+    UCSR0B |= (1 << RXEN0) | (1 << TXEN0); //NOTE: the ATmega328p has 1 UART: 0
+    // UCSR0B |= (1 << 4) | (1 << 3);
+    
+    /* Set frame format: 8 bit data, 2 stop bit */
+    UCSR0C |= (1 << USBS0) | (3 << UCSZ00);
+    // UCSR0C |= (1 << 3) | (3 << 1);
+    
+}
+
+static void
+USART_Transmit(unsigned char data, FILE *stream)
+{
+    /* Wait until the transmit buffer is empty*/
+    while(!(UCSR0A & (1 << UDRE0)))
+    {
+        ;
+    }
+        
+    /* Put the data into a buffer, then send/transmit the data */
+    UDR0 = data;
+}
+
+static char
+USART_Receive(FILE *stream)
+{
+    /* Wait until the transmit buffer is empty*/
+    while(!(UCSR0A & (1 << UDRE0)))
+    {
+        ;
+    }
+    
+    /* Get the received data from the buffer */
+    return UDR0;
+}
+
+// Setup the stream functions for UART
+FILE uart_output = FDEV_SETUP_STREAM(USART_Transmit, NULL, _FDEV_SETUP_WRITE);
+FILE uart_input = FDEV_SETUP_STREAM(NULL, USART_Receive, _FDEV_SETUP_READ);
 
 
 // Board state used when device is armed 
@@ -45,31 +88,22 @@ enum boardStates armedState(int sensorValue) {
 
 
 // Get input from keypad, return input when 4 digits are inputted
-enum boardStates getInputState(char input[]) {
-  //char key = KEYPAD_GetKey();
-  char key = 'a';
-  if (key) {
-    // TODO add inputted key to the end of array (Dynamic array?)
-    printf("%c", key);
-    if (sizeof**(&input) / sizeof(char)) {
-      return checkingInput;
-    }
-  }
-  return timer;
-  
-};
-
-enum boardStates checkInputState(char input[]) {
-  if (correctPasscode == input) {
+enum boardStates getInputState() {
+  uint8_t key;
+  key = KEYPAD_GetKey();
+  printf("%s\n", key);
+  if (key == '1') {
     return unlocked;
   }
   return alarm;
+  
 };
 
 int unlockedState(void) {
   // TODO show username on screen?
   //char key = KEYPAD_GetKey(); 
-  char key = 'A';
+  puts("Unlocked! Press 'A' to arm");
+  uint8_t key = KEYPAD_GetKey();
   if (key=='A') {
     return armed;
   }
@@ -82,33 +116,43 @@ int alarmState(void) {
   int buzzer = 0;
   while (1) {
     buzzer = 1000;
+    PORTB ^= (1 << PINB1);
+    _delay_ms(500);
     printf("%d", buzzer);
   }
 
 };
 
 int main(void) {
-  //KEYPAD_Init();
-  enum boardStates state = unlocked;
-  char input[4] = {1,2,3,4};
-  while (1) {
-    switch (state) {
-      case armed:
-        armedState(1001);
-        break;
-      case timer:
-        getInputState(input);
-        break;
-      case checkingInput:
-        checkInputState(input);
-        break;
-      case unlocked:
-        unlockedState();
-        break;
-      case alarm:
-        alarmState();
-        break;
-    }
 
-  }
+
+ // initialize the UART with baud rate
+USART_init(MYUBRR);
+   
+//redirect the stdin and stdout to USART for debugging
+stdout = &uart_output;
+stdin = &uart_input;
+ 
+KEYPAD_Init();
+
+// Starting with timer state to test input 
+enum boardStates state = timer;
+ 
+while (1) {
+   switch (state) {
+    case armed:
+      state = armedState(1001);
+      break;
+    case timer:
+      state = getInputState();
+      break;
+     case unlocked:
+      state = unlockedState();
+      break;
+     case alarm:
+      state = alarmState();
+      break;
+   }
+
+ }
 };

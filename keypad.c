@@ -70,9 +70,6 @@ Errors and omissions should be reported to codelibraries@exploreembedded.com
              |___________________________ C0
 
  ****************************************************************************************************/
-#define __AVR_ATmega328P__
-
-#define F_CPU 16000
 
 #include "keypad.h"
 #include "delay.h"
