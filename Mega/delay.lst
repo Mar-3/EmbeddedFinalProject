@@ -1,0 +1,44 @@
+   1               		.file	"delay.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               		.section	.text.DELAY_sec,"ax",@progbits
+  10               	.global	DELAY_sec
+  12               	DELAY_sec:
+  13               	/* prologue: function */
+  14               	/* frame size = 0 */
+  15               	/* stack size = 0 */
+  16               	.L__stack_usage = 0
+  17               	.L2:
+  18 0000 0097      		sbiw r24,0
+  19 0002 01F4      		brne .L3
+  20               	/* epilogue start */
+  21 0004 0895      		ret
+  22               	.L3:
+  23 0006 2FEF      		ldi r18,lo8(1599999)
+  24 0008 39E6      		ldi r19,hi8(1599999)
+  25 000a 48E1      		ldi r20,hlo8(1599999)
+  26 000c 2150      	1:	subi r18,1
+  27 000e 3040      		sbci r19,0
+  28 0010 4040      		sbci r20,0
+  29 0012 01F4      		brne 1b
+  30 0014 00C0      		rjmp .
+  31 0016 0000      		nop
+  32 0018 0197      		sbiw r24,1
+  33 001a 00C0      		rjmp .L2
+  35               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 delay.c
+     /tmp/ccL7t3J5.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccL7t3J5.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccL7t3J5.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccL7t3J5.s:5      *ABS*:000000000000003b __RAMPZ__
+     /tmp/ccL7t3J5.s:6      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccL7t3J5.s:7      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccL7t3J5.s:12     .text.DELAY_sec:0000000000000000 DELAY_sec
+
+NO UNDEFINED SYMBOLS
