@@ -102,13 +102,16 @@ timerState()
    // TODO: start timer for 10 seconds
 
     uint8_t key = KEYPAD_GetKey();
-    printf("Key: %c\n", key);
-    
-    return TIMER;
-
+    if (key == NULL)
+    {
+        return TIMER;
+    }
     // add key to input
     input[inputIndex] = key;
     inputIndex++;
+    _delay_ms(300);
+    printf("Key: %c\n", key);
+    key = NULL;
 
     if (inputIndex == 4)
     {
@@ -136,38 +139,9 @@ timerState()
 
     // if keypad input is incorrect, switch to ALARM
 
-
-    // if timer expires, switch to ALARM
-    return UNLOCKED;
+   return TIMER; 
 }
 
-void
-initKeypad() 
-{
-
-    
-    // keypad is connected to physical pins 2-9
-    // set the pins to input
-    DDRD &= ~(1 << PIND2);
-    DDRD &= ~(1 << PIND3);
-    DDRD &= ~(1 << PIND4);
-    DDRD &= ~(1 << PIND5);
-    DDRD &= ~(1 << PIND6);
-    DDRD &= ~(1 << PIND7);
-    DDRB &= ~(1 << PINB0);
-    DDRB &= ~(1 << PINB1);
-    
-    // set the pins to pull-up
-    PORTD |= (1 << PIND2);
-    PORTD |= (1 << PIND3);
-    PORTD |= (1 << PIND4);
-    PORTD |= (1 << PIND5);
-    PORTD |= (1 << PIND6);
-    PORTD |= (1 << PIND7);
-    PORTB |= (1 << PINB0);
-    PORTB |= (1 << PINB1);
-
-}
 
 int 
 main(void)
