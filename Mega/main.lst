@@ -39,7 +39,7 @@
   44               	/* frame size = 0 */
   45               	/* stack size = 0 */
   46               	.L__stack_usage = 0
-  47 0000 81E0      		ldi r24,lo8(1)
+  47 0000 80E0      		ldi r24,0
   48               	/* epilogue start */
   49 0002 0895      		ret
   51               		.section	.rodata.timerState.str1.1,"aMS",@progbits,1
@@ -118,146 +118,174 @@
  123 0080 82E0      		ldi r24,lo8(2)
  124               	/* epilogue start */
  125 0082 0895      		ret
- 127               		.section	.rodata.main.str1.1,"aMS",@progbits,1
- 128               	.LC1:
- 129 0000 5374 6172 		.string	"Starting..."
- 129      7469 6E67 
- 129      2E2E 2E00 
- 130               	.LC2:
- 131 000c 4152 4D45 		.string	"ARMED"
- 131      4400 
- 132               	.LC3:
- 133 0012 554E 4C4F 		.string	"UNLOCKED"
- 133      434B 4544 
- 133      00
- 134               	.LC4:
- 135 001b 414C 4152 		.string	"ALARM"
- 135      4D00 
- 136               		.section	.text.startup.main,"ax",@progbits
- 137               	.global	main
- 139               	main:
- 140               	/* prologue: function */
- 141               	/* frame size = 0 */
- 142               	/* stack size = 0 */
- 143               	.L__stack_usage = 0
- 144 0000 1092 C500 		sts 197,__zero_reg__
- 145 0004 80E1      		ldi r24,lo8(16)
- 146 0006 8093 C400 		sts 196,r24
- 147 000a 8091 C100 		lds r24,193
- 148 000e 8861      		ori r24,lo8(24)
- 149 0010 8093 C100 		sts 193,r24
- 150 0014 8091 C200 		lds r24,194
- 151 0018 8E60      		ori r24,lo8(14)
- 152 001a 8093 C200 		sts 194,r24
- 153 001e 80E0      		ldi r24,lo8(uart_output)
- 154 0020 90E0      		ldi r25,hi8(uart_output)
- 155 0022 9093 0000 		sts __iob+2+1,r25
- 156 0026 8093 0000 		sts __iob+2,r24
- 157 002a 80E0      		ldi r24,lo8(uart_input)
- 158 002c 90E0      		ldi r25,hi8(uart_input)
- 159 002e 9093 0000 		sts __iob+1,r25
- 160 0032 8093 0000 		sts __iob,r24
- 161 0036 0E94 0000 		call KEYPAD_Init
- 162 003a 80E0      		ldi r24,lo8(.LC1)
- 163 003c 90E0      		ldi r25,hi8(.LC1)
- 164 003e 0E94 0000 		call puts
- 165 0042 81E0      		ldi r24,lo8(1)
- 166               	.L20:
- 167 0044 8130      		cpi r24,lo8(1)
- 168 0046 01F0      		breq .L21
- 169 0048 00F0      		brlo .L22
- 170 004a 8230      		cpi r24,lo8(2)
- 171 004c 01F0      		breq .L23
- 172 004e 8330      		cpi r24,lo8(3)
- 173 0050 01F4      		brne .L20
- 174               	.L24:
- 175 0052 80E0      		ldi r24,lo8(.LC4)
- 176 0054 90E0      		ldi r25,hi8(.LC4)
- 177 0056 0E94 0000 		call puts
- 178 005a 00C0      		rjmp .L24
- 179               	.L22:
- 180 005c 80E0      		ldi r24,lo8(.LC2)
- 181 005e 90E0      		ldi r25,hi8(.LC2)
- 182 0060 0E94 0000 		call puts
- 183               	.L21:
- 184 0064 0E94 0000 		call timerState
- 185 0068 00C0      		rjmp .L20
- 186               	.L23:
- 187 006a 80E0      		ldi r24,lo8(.LC3)
- 188 006c 90E0      		ldi r25,hi8(.LC3)
- 189 006e 0E94 0000 		call puts
- 190 0072 00C0      		rjmp .L23
- 192               	.global	uart_input
- 193               		.section	.data.uart_input,"aw",@progbits
- 196               	uart_input:
- 197 0000 0000 00   		.zero	3
- 198 0003 01        		.byte	1
- 199 0004 0000 0000 		.zero	4
- 200 0008 0000      		.word	0
- 201 000a 0000      		.word	gs(USART_Receive)
- 202 000c 0000      		.word	0
- 203               	.global	uart_output
- 204               		.section	.data.uart_output,"aw",@progbits
- 207               	uart_output:
- 208 0000 0000 00   		.zero	3
- 209 0003 02        		.byte	2
- 210 0004 0000 0000 		.zero	4
- 211 0008 0000      		.word	gs(USART_Transmit)
- 212 000a 0000      		.word	0
- 213 000c 0000      		.word	0
- 214               	.global	inputIndex
- 215               		.section	.bss.inputIndex,"aw",@nobits
- 218               	inputIndex:
- 219 0000 0000      		.zero	2
- 220               		.comm	input,4,1
- 221               	.global	password
- 222               		.section	.data.password,"aw",@progbits
- 225               	password:
- 226 0000 31        		.byte	49
- 227 0001 32        		.byte	50
- 228 0002 33        		.byte	51
- 229 0003 34        		.byte	52
- 230               	.global	keypad
- 231               		.section	.data.keypad,"aw",@progbits
- 234               	keypad:
- 235 0000 31        		.byte	49
- 236 0001 32        		.byte	50
- 237 0002 33        		.byte	51
- 238 0003 41        		.byte	65
- 239 0004 34        		.byte	52
- 240 0005 35        		.byte	53
- 241 0006 36        		.byte	54
- 242 0007 42        		.byte	66
- 243 0008 37        		.byte	55
- 244 0009 38        		.byte	56
- 245 000a 39        		.byte	57
- 246 000b 43        		.byte	67
- 247 000c 2A        		.byte	42
- 248 000d 30        		.byte	48
- 249 000e 23        		.byte	35
- 250 000f 44        		.byte	68
- 251               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
- 252               	.global __do_copy_data
- 253               	.global __do_clear_bss
+ 127               		.section	.text.alarmState,"ax",@progbits
+ 128               	.global	alarmState
+ 130               	alarmState:
+ 131               	/* prologue: function */
+ 132               	/* frame size = 0 */
+ 133               	/* stack size = 0 */
+ 134               	.L__stack_usage = 0
+ 135 0000 85B1      		in r24,0x5
+ 136 0002 90E1      		ldi r25,lo8(16)
+ 137 0004 8927      		eor r24,r25
+ 138 0006 85B9      		out 0x5,r24
+ 139 0008 83E0      		ldi r24,lo8(3)
+ 140               	/* epilogue start */
+ 141 000a 0895      		ret
+ 143               		.section	.rodata.main.str1.1,"aMS",@progbits,1
+ 144               	.LC1:
+ 145 0000 4152 4D45 		.string	"ARMED"
+ 145      4400 
+ 146               	.LC2:
+ 147 0006 554E 4C4F 		.string	"UNLOCKED"
+ 147      434B 4544 
+ 147      00
+ 148               	.LC3:
+ 149 000f 414C 4152 		.string	"ALARM"
+ 149      4D00 
+ 150               		.section	.text.startup.main,"ax",@progbits
+ 151               	.global	main
+ 153               	main:
+ 154               	/* prologue: function */
+ 155               	/* frame size = 0 */
+ 156               	/* stack size = 0 */
+ 157               	.L__stack_usage = 0
+ 158 0000 1092 C500 		sts 197,__zero_reg__
+ 159 0004 80E1      		ldi r24,lo8(16)
+ 160 0006 8093 C400 		sts 196,r24
+ 161 000a 8091 C100 		lds r24,193
+ 162 000e 8861      		ori r24,lo8(24)
+ 163 0010 8093 C100 		sts 193,r24
+ 164 0014 8091 C200 		lds r24,194
+ 165 0018 8E60      		ori r24,lo8(14)
+ 166 001a 8093 C200 		sts 194,r24
+ 167 001e 80E0      		ldi r24,lo8(uart_output)
+ 168 0020 90E0      		ldi r25,hi8(uart_output)
+ 169 0022 9093 0000 		sts __iob+2+1,r25
+ 170 0026 8093 0000 		sts __iob+2,r24
+ 171 002a 80E0      		ldi r24,lo8(uart_input)
+ 172 002c 90E0      		ldi r25,hi8(uart_input)
+ 173 002e 9093 0000 		sts __iob+1,r25
+ 174 0032 8093 0000 		sts __iob,r24
+ 175 0036 0E94 0000 		call KEYPAD_Init
+ 176 003a 249A      		sbi 0x4,4
+ 177 003c 8091 0101 		lds r24,257
+ 178 0040 8064      		ori r24,lo8(64)
+ 179 0042 8093 0101 		sts 257,r24
+ 180 0046 81E0      		ldi r24,lo8(1)
+ 181               	.L21:
+ 182 0048 8130      		cpi r24,lo8(1)
+ 183 004a 01F0      		breq .L22
+ 184 004c 00F0      		brlo .L23
+ 185 004e 8230      		cpi r24,lo8(2)
+ 186 0050 01F4      		brne .L29
+ 187 0052 C0E0      		ldi r28,lo8(input)
+ 188 0054 D0E0      		ldi r29,hi8(input)
+ 189 0056 14E0      		ldi r17,lo8(4)
+ 190               	.L24:
+ 191 0058 FE01      		movw r30,r28
+ 192 005a 812F      		mov r24,r17
+ 193               		0:
+ 194 005c 1192      		st Z+,__zero_reg__
+ 195 005e 8A95      		dec r24
+ 196 0060 01F4      		brne 0b
+ 197 0062 1092 0000 		sts inputIndex+1,__zero_reg__
+ 198 0066 1092 0000 		sts inputIndex,__zero_reg__
+ 199 006a 80E0      		ldi r24,lo8(.LC2)
+ 200 006c 90E0      		ldi r25,hi8(.LC2)
+ 201 006e 0E94 0000 		call puts
+ 202 0072 8091 0201 		lds r24,258
+ 203 0076 8064      		ori r24,lo8(64)
+ 204 0078 8093 0201 		sts 258,r24
+ 205 007c 00C0      		rjmp .L24
+ 206               	.L29:
+ 207 007e 8330      		cpi r24,lo8(3)
+ 208 0080 01F4      		brne .L21
+ 209 0082 80E0      		ldi r24,lo8(.LC3)
+ 210 0084 90E0      		ldi r25,hi8(.LC3)
+ 211 0086 0E94 0000 		call puts
+ 212 008a 0E94 0000 		call alarmState
+ 213 008e 00C0      		rjmp .L21
+ 214               	.L23:
+ 215 0090 80E0      		ldi r24,lo8(.LC1)
+ 216 0092 90E0      		ldi r25,hi8(.LC1)
+ 217 0094 0E94 0000 		call puts
+ 218 0098 00C0      		rjmp .L23
+ 219               	.L22:
+ 220 009a 0E94 0000 		call timerState
+ 221 009e 00C0      		rjmp .L21
+ 223               	.global	uart_input
+ 224               		.section	.data.uart_input,"aw",@progbits
+ 227               	uart_input:
+ 228 0000 0000 00   		.zero	3
+ 229 0003 01        		.byte	1
+ 230 0004 0000 0000 		.zero	4
+ 231 0008 0000      		.word	0
+ 232 000a 0000      		.word	gs(USART_Receive)
+ 233 000c 0000      		.word	0
+ 234               	.global	uart_output
+ 235               		.section	.data.uart_output,"aw",@progbits
+ 238               	uart_output:
+ 239 0000 0000 00   		.zero	3
+ 240 0003 02        		.byte	2
+ 241 0004 0000 0000 		.zero	4
+ 242 0008 0000      		.word	gs(USART_Transmit)
+ 243 000a 0000      		.word	0
+ 244 000c 0000      		.word	0
+ 245               	.global	inputIndex
+ 246               		.section	.bss.inputIndex,"aw",@nobits
+ 249               	inputIndex:
+ 250 0000 0000      		.zero	2
+ 251               		.comm	input,4,1
+ 252               	.global	password
+ 253               		.section	.data.password,"aw",@progbits
+ 256               	password:
+ 257 0000 31        		.byte	49
+ 258 0001 32        		.byte	50
+ 259 0002 33        		.byte	51
+ 260 0003 34        		.byte	52
+ 261               	.global	keypad
+ 262               		.section	.data.keypad,"aw",@progbits
+ 265               	keypad:
+ 266 0000 31        		.byte	49
+ 267 0001 32        		.byte	50
+ 268 0002 33        		.byte	51
+ 269 0003 41        		.byte	65
+ 270 0004 34        		.byte	52
+ 271 0005 35        		.byte	53
+ 272 0006 36        		.byte	54
+ 273 0007 42        		.byte	66
+ 274 0008 37        		.byte	55
+ 275 0009 38        		.byte	56
+ 276 000a 39        		.byte	57
+ 277 000b 43        		.byte	67
+ 278 000c 2A        		.byte	42
+ 279 000d 30        		.byte	48
+ 280 000e 23        		.byte	35
+ 281 000f 44        		.byte	68
+ 282               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+ 283               	.global __do_copy_data
+ 284               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-     /tmp/cciMV6Jg.s:2      *ABS*:000000000000003e __SP_H__
-     /tmp/cciMV6Jg.s:3      *ABS*:000000000000003d __SP_L__
-     /tmp/cciMV6Jg.s:4      *ABS*:000000000000003f __SREG__
-     /tmp/cciMV6Jg.s:5      *ABS*:000000000000003b __RAMPZ__
-     /tmp/cciMV6Jg.s:6      *ABS*:0000000000000000 __tmp_reg__
-     /tmp/cciMV6Jg.s:7      *ABS*:0000000000000001 __zero_reg__
-     /tmp/cciMV6Jg.s:11     .text.USART_Transmit:0000000000000000 USART_Transmit
-     /tmp/cciMV6Jg.s:26     .text.USART_Receive:0000000000000000 USART_Receive
-     /tmp/cciMV6Jg.s:42     .text.armedState:0000000000000000 armedState
-     /tmp/cciMV6Jg.s:57     .text.timerState:0000000000000000 timerState
-     /tmp/cciMV6Jg.s:218    .bss.inputIndex:0000000000000000 inputIndex
+     /tmp/cciHXDn1.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cciHXDn1.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cciHXDn1.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cciHXDn1.s:5      *ABS*:000000000000003b __RAMPZ__
+     /tmp/cciHXDn1.s:6      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cciHXDn1.s:7      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cciHXDn1.s:11     .text.USART_Transmit:0000000000000000 USART_Transmit
+     /tmp/cciHXDn1.s:26     .text.USART_Receive:0000000000000000 USART_Receive
+     /tmp/cciHXDn1.s:42     .text.armedState:0000000000000000 armedState
+     /tmp/cciHXDn1.s:57     .text.timerState:0000000000000000 timerState
+     /tmp/cciHXDn1.s:249    .bss.inputIndex:0000000000000000 inputIndex
                             *COM*:0000000000000004 input
-     /tmp/cciMV6Jg.s:225    .data.password:0000000000000000 password
-     /tmp/cciMV6Jg.s:139    .text.startup.main:0000000000000000 main
-     /tmp/cciMV6Jg.s:207    .data.uart_output:0000000000000000 uart_output
-     /tmp/cciMV6Jg.s:196    .data.uart_input:0000000000000000 uart_input
-     /tmp/cciMV6Jg.s:234    .data.keypad:0000000000000000 keypad
+     /tmp/cciHXDn1.s:256    .data.password:0000000000000000 password
+     /tmp/cciHXDn1.s:130    .text.alarmState:0000000000000000 alarmState
+     /tmp/cciHXDn1.s:153    .text.startup.main:0000000000000000 main
+     /tmp/cciHXDn1.s:238    .data.uart_output:0000000000000000 uart_output
+     /tmp/cciHXDn1.s:227    .data.uart_input:0000000000000000 uart_input
+     /tmp/cciHXDn1.s:265    .data.keypad:0000000000000000 keypad
 
 UNDEFINED SYMBOLS
 KEYPAD_GetKey

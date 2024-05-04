@@ -90,10 +90,11 @@ armedState()
 {
     // listen for keypad input and signal from uno
     // if signal from uno, switch to TIMER
-    // if keypad input, switch to UNLOCKED or ALARM 
-    
-    // check if keypad input
-    return TIMER;
+    if (1 == 2) 
+    {
+        return TIMER;
+    }
+    return ARMED;
 }
 
 enum STATE 
@@ -133,15 +134,16 @@ timerState()
         }
     }
 
-    // print the keypad inputs to stdout
-
-    // if keypad input is correct, switch to UNLOCKED
-
-    // if keypad input is incorrect, switch to ALARM
-
    return TIMER; 
 }
 
+enum STATE 
+alarmState()
+{
+    // activate the buzzer
+    PORTB ^= (1 << PINB4);
+    return ALARM;
+}
 
 int 
 main(void)
@@ -153,13 +155,18 @@ main(void)
     stdin = &uart_input;
 
     // init keypad
-    //initKeypad();
     KEYPAD_Init();
+
+    // set the buzzer pin to output
+    DDRB |= (1 << PINB4);
+
+    // set unlock pin to output
+    DDRH |= (1 << PINH6);
 
     // init state
     enum STATE state = TIMER;
     #pragma endregion
-    printf("Starting...\n");
+
 
     // main program loop
     while (1)
@@ -168,19 +175,24 @@ main(void)
         {
             case ARMED:
                 printf("ARMED\n");
-                // listen for keypad input and signal from uno
-                // if signal from uno, switch to TIMER
-                // if keypad input, switch to UNLOCKED or ALARM 
                 state = armedState();
                 break;
             case TIMER:
                 state = timerState();
                 break;
             case UNLOCKED:
+                // empty the input buffer
+                memset(input, 0, sizeof(input));
+                inputIndex = 0;
                 printf("UNLOCKED\n");
+                // turn on the unlocked pin
+                PORTH |= (1 << PINH6);
+                state = UNLOCKED;
                 break;
             case ALARM:
                 printf("ALARM\n");
+                state = alarmState();
+                // Buzzer
                 break;
             default:
                 break;
