@@ -76,10 +76,14 @@ FILE uart_input = FDEV_SETUP_STREAM(NULL, USART_Receive, _FDEV_SETUP_READ);
 
 
 // Board state used when device is armed 
-enum boardStates armedState(int sensorValue) {
+enum boardStates armedState() {
   // If sensor value is above threshold, start timer
   // Else return the same state (armed)
-  if (sensorValue > 1000) {
+
+  // Read sensor value
+  _delay_ms(1000);
+  int sensorValue = PIND & (1 << PIND2);
+  if (sensorValue != 0) {
     printf("Movement detected, switching to timer");
     return timer;
   }
@@ -118,7 +122,8 @@ int alarmState(void) {
     buzzer = 1000;
     PORTB ^= (1 << PINB1);
     _delay_ms(500);
-    printf("%d", buzzer);
+    //printf("%d", buzzer);
+    fprintf(&uart_output, "Hello world\n");
   }
 
 };
@@ -135,13 +140,17 @@ stdin = &uart_input;
  
 KEYPAD_Init();
 
+// set pin 2 on the arduino uno to input for the motion sensor 
+ DDRD &= ~(1 << PIND2);
+
+
 // Starting with timer state to test input 
-enum boardStates state = timer;
+enum boardStates state = armed;
  
 while (1) {
    switch (state) {
     case armed:
-      state = armedState(1001);
+      state = armedState();
       break;
     case timer:
       state = getInputState();
