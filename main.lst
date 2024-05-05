@@ -54,19 +54,19 @@
   55 000c 01F4      		brne 1b
   56 000e 00C0      		rjmp .
   57 0010 0000      		nop
-  58 0012 4A9B      		sbis 0x9,2
-  59 0014 00C0      		rjmp .L11
-  60 0016 80E0      		ldi r24,lo8(.LC0)
-  61 0018 90E0      		ldi r25,hi8(.LC0)
-  62 001a 9F93      		push r25
-  63 001c 8F93      		push r24
-  64 001e 0E94 0000 		call printf
-  65 0022 0F90      		pop __tmp_reg__
-  66 0024 0F90      		pop __tmp_reg__
-  67 0026 81E0      		ldi r24,lo8(1)
-  68 0028 0895      		ret
-  69               	.L11:
-  70 002a 80E0      		ldi r24,0
+  58 0012 89B1      		in r24,0x9
+  59 0014 8470      		andi r24,lo8(4)
+  60 0016 8115      		cp r24, __zero_reg__
+  61 0018 01F0      		breq .L9
+  62 001a 80E0      		ldi r24,lo8(.LC0)
+  63 001c 90E0      		ldi r25,hi8(.LC0)
+  64 001e 9F93      		push r25
+  65 0020 8F93      		push r24
+  66 0022 0E94 0000 		call printf
+  67 0026 0F90      		pop __tmp_reg__
+  68 0028 0F90      		pop __tmp_reg__
+  69 002a 81E0      		ldi r24,lo8(1)
+  70               	.L9:
   71               	/* epilogue start */
   72 002c 0895      		ret
   74               		.section	.rodata.getInputState.str1.1,"aMS",@progbits,1
@@ -95,9 +95,9 @@
   98 001e 0F90      		pop __tmp_reg__
   99 0020 83E0      		ldi r24,lo8(3)
  100 0022 C133      		cpi r28,lo8(49)
- 101 0024 01F4      		brne .L12
+ 101 0024 01F4      		brne .L14
  102 0026 82E0      		ldi r24,lo8(2)
- 103               	.L12:
+ 103               	.L14:
  104               	/* epilogue start */
  105 0028 CF91      		pop r28
  106 002a 0895      		ret
@@ -119,130 +119,149 @@
  120 0002 90E0      		ldi r25,hi8(.LC2)
  121 0004 0E94 0000 		call puts
  122 0008 0E94 0000 		call KEYPAD_GetKey
- 123 000c 8134      		cpi r24,lo8(65)
- 124 000e 01F0      		breq .L17
- 125 0010 82E0      		ldi r24,lo8(2)
- 126 0012 90E0      		ldi r25,0
- 127 0014 0895      		ret
- 128               	.L17:
- 129 0016 90E0      		ldi r25,0
- 130 0018 80E0      		ldi r24,0
- 131               	/* epilogue start */
- 132 001a 0895      		ret
- 134               		.section	.rodata.alarmState.str1.1,"aMS",@progbits,1
- 135               	.LC3:
- 136 0000 4865 6C6C 		.string	"Hello world\n"
- 136      6F20 776F 
- 136      726C 640A 
- 136      00
- 137               		.section	.text.alarmState,"ax",@progbits
- 138               	.global	alarmState
- 140               	alarmState:
- 141               	/* prologue: function */
- 142               	/* frame size = 0 */
- 143               	/* stack size = 0 */
- 144               	.L__stack_usage = 0
- 145 0000 C2E0      		ldi r28,lo8(2)
- 146               	.L19:
- 147 0002 85B1      		in r24,0x5
- 148 0004 8C27      		eor r24,r28
- 149 0006 85B9      		out 0x5,r24
- 150 0008 2FEF      		ldi r18,lo8(1599999)
- 151 000a 89E6      		ldi r24,hi8(1599999)
- 152 000c 98E1      		ldi r25,hlo8(1599999)
- 153 000e 2150      	1:	subi r18,1
- 154 0010 8040      		sbci r24,0
- 155 0012 9040      		sbci r25,0
- 156 0014 01F4      		brne 1b
- 157 0016 00C0      		rjmp .
- 158 0018 0000      		nop
- 159 001a 60E0      		ldi r22,lo8(uart_output)
- 160 001c 70E0      		ldi r23,hi8(uart_output)
- 161 001e 80E0      		ldi r24,lo8(.LC3)
- 162 0020 90E0      		ldi r25,hi8(.LC3)
- 163 0022 0E94 0000 		call fputs
- 164 0026 00C0      		rjmp .L19
- 166               		.section	.text.startup.main,"ax",@progbits
- 167               	.global	main
- 169               	main:
- 170               	/* prologue: function */
- 171               	/* frame size = 0 */
- 172               	/* stack size = 0 */
- 173               	.L__stack_usage = 0
- 174 0000 1092 C500 		sts 197,__zero_reg__
- 175 0004 80E1      		ldi r24,lo8(16)
- 176 0006 8093 C400 		sts 196,r24
- 177 000a 8091 C100 		lds r24,193
- 178 000e 8861      		ori r24,lo8(24)
- 179 0010 8093 C100 		sts 193,r24
- 180 0014 8091 C200 		lds r24,194
- 181 0018 8E60      		ori r24,lo8(14)
- 182 001a 8093 C200 		sts 194,r24
- 183 001e 80E0      		ldi r24,lo8(uart_output)
- 184 0020 90E0      		ldi r25,hi8(uart_output)
- 185 0022 9093 0000 		sts __iob+2+1,r25
- 186 0026 8093 0000 		sts __iob+2,r24
- 187 002a 80E0      		ldi r24,lo8(uart_input)
- 188 002c 90E0      		ldi r25,hi8(uart_input)
- 189 002e 9093 0000 		sts __iob+1,r25
- 190 0032 8093 0000 		sts __iob,r24
- 191 0036 0E94 0000 		call KEYPAD_Init
- 192 003a 5298      		cbi 0xa,2
- 193 003c 80E0      		ldi r24,0
- 194               	.L22:
- 195 003e 8130      		cpi r24,lo8(1)
- 196 0040 01F0      		breq .L23
- 197 0042 00F0      		brlo .L24
- 198 0044 8230      		cpi r24,lo8(2)
- 199 0046 01F0      		breq .L25
- 200 0048 8330      		cpi r24,lo8(3)
- 201 004a 01F4      		brne .L22
- 202 004c 0E94 0000 		call alarmState
- 203               	.L24:
- 204 0050 0E94 0000 		call armedState
- 205 0054 00C0      		rjmp .L22
- 206               	.L23:
- 207 0056 0E94 0000 		call getInputState
- 208 005a 00C0      		rjmp .L22
- 209               	.L25:
- 210 005c 0E94 0000 		call unlockedState
- 211 0060 00C0      		rjmp .L22
- 213               	.global	uart_input
- 214               		.section	.data.uart_input,"aw",@progbits
- 217               	uart_input:
- 218 0000 0000 00   		.zero	3
- 219 0003 01        		.byte	1
- 220 0004 0000 0000 		.zero	4
- 221 0008 0000      		.word	0
- 222 000a 0000      		.word	gs(USART_Receive)
- 223 000c 0000      		.word	0
- 224               	.global	uart_output
- 225               		.section	.data.uart_output,"aw",@progbits
- 228               	uart_output:
- 229 0000 0000 00   		.zero	3
- 230 0003 02        		.byte	2
- 231 0004 0000 0000 		.zero	4
- 232 0008 0000      		.word	gs(USART_Transmit)
- 233 000a 0000      		.word	0
- 234 000c 0000      		.word	0
- 235               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
- 236               	.global __do_copy_data
+ 123 000c 21E0      		ldi r18,lo8(1)
+ 124 000e 30E0      		ldi r19,0
+ 125 0010 8134      		cpi r24,lo8(65)
+ 126 0012 01F4      		brne .L18
+ 127 0014 20E0      		ldi r18,0
+ 128 0016 30E0      		ldi r19,0
+ 129               	.L18:
+ 130 0018 C901      		movw r24,r18
+ 131 001a 880F      		lsl r24
+ 132 001c 991F      		rol r25
+ 133               	/* epilogue start */
+ 134 001e 0895      		ret
+ 136               		.section	.rodata.alarmState.str1.1,"aMS",@progbits,1
+ 137               	.LC3:
+ 138 0000 4865 6C6C 		.string	"Hello world\n"
+ 138      6F20 776F 
+ 138      726C 640A 
+ 138      00
+ 139               		.section	.text.alarmState,"ax",@progbits
+ 140               	.global	alarmState
+ 142               	alarmState:
+ 143               	/* prologue: function */
+ 144               	/* frame size = 0 */
+ 145               	/* stack size = 0 */
+ 146               	.L__stack_usage = 0
+ 147 0000 C2E0      		ldi r28,lo8(2)
+ 148               	.L20:
+ 149 0002 85B1      		in r24,0x5
+ 150 0004 8C27      		eor r24,r28
+ 151 0006 85B9      		out 0x5,r24
+ 152 0008 2FEF      		ldi r18,lo8(1599999)
+ 153 000a 89E6      		ldi r24,hi8(1599999)
+ 154 000c 98E1      		ldi r25,hlo8(1599999)
+ 155 000e 2150      	1:	subi r18,1
+ 156 0010 8040      		sbci r24,0
+ 157 0012 9040      		sbci r25,0
+ 158 0014 01F4      		brne 1b
+ 159 0016 00C0      		rjmp .
+ 160 0018 0000      		nop
+ 161 001a 60E0      		ldi r22,lo8(uart_output)
+ 162 001c 70E0      		ldi r23,hi8(uart_output)
+ 163 001e 80E0      		ldi r24,lo8(.LC3)
+ 164 0020 90E0      		ldi r25,hi8(.LC3)
+ 165 0022 0E94 0000 		call fputs
+ 166 0026 00C0      		rjmp .L20
+ 168               		.section	.text.startup.main,"ax",@progbits
+ 169               	.global	main
+ 171               	main:
+ 172               	/* prologue: function */
+ 173               	/* frame size = 0 */
+ 174               	/* stack size = 0 */
+ 175               	.L__stack_usage = 0
+ 176 0000 1092 C500 		sts 197,__zero_reg__
+ 177 0004 80E1      		ldi r24,lo8(16)
+ 178 0006 8093 C400 		sts 196,r24
+ 179 000a 8091 C100 		lds r24,193
+ 180 000e 8861      		ori r24,lo8(24)
+ 181 0010 8093 C100 		sts 193,r24
+ 182 0014 8091 C200 		lds r24,194
+ 183 0018 8E60      		ori r24,lo8(14)
+ 184 001a 8093 C200 		sts 194,r24
+ 185 001e 80E0      		ldi r24,lo8(uart_output)
+ 186 0020 90E0      		ldi r25,hi8(uart_output)
+ 187 0022 9093 0000 		sts __iob+2+1,r25
+ 188 0026 8093 0000 		sts __iob+2,r24
+ 189 002a 80E0      		ldi r24,lo8(uart_input)
+ 190 002c 90E0      		ldi r25,hi8(uart_input)
+ 191 002e 9093 0000 		sts __iob+1,r25
+ 192 0032 8093 0000 		sts __iob,r24
+ 193 0036 0E94 0000 		call KEYPAD_Init
+ 194 003a 5298      		cbi 0xa,2
+ 195 003c 80E0      		ldi r24,0
+ 196               	.L22:
+ 197 003e 8230      		cpi r24,lo8(2)
+ 198 0040 01F0      		breq .L23
+ 199               	.L28:
+ 200 0042 8330      		cpi r24,lo8(3)
+ 201 0044 00F4      		brsh .L24
+ 202 0046 8111      		cpse r24,__zero_reg__
+ 203 0048 00C0      		rjmp .L30
+ 204 004a 0E94 0000 		call armedState
+ 205 004e 00C0      		rjmp .L22
+ 206               	.L24:
+ 207 0050 8330      		cpi r24,lo8(3)
+ 208 0052 01F4      		brne .L28
+ 209 0054 0E94 0000 		call alarmState
+ 210               	.L30:
+ 211 0058 0E94 0000 		call getInputState
+ 212 005c 00C0      		rjmp .L22
+ 213               	.L23:
+ 214 005e 0E94 0000 		call unlockedState
+ 215 0062 00C0      		rjmp .L22
+ 217               	.global	uart_input
+ 218               		.section	.data.uart_input,"aw"
+ 221               	uart_input:
+ 222 0000 0000 00   		.zero	3
+ 223 0003 01        		.byte	1
+ 224 0004 0000 0000 		.zero	4
+ 225 0008 0000      		.word	0
+ 226 000a 0000      		.word	gs(USART_Receive)
+ 227 000c 0000      		.word	0
+ 228               	.global	uart_output
+ 229               		.section	.data.uart_output,"aw"
+ 232               	uart_output:
+ 233 0000 0000 00   		.zero	3
+ 234 0003 02        		.byte	2
+ 235 0004 0000 0000 		.zero	4
+ 236 0008 0000      		.word	gs(USART_Transmit)
+ 237 000a 0000      		.word	0
+ 238 000c 0000      		.word	0
+ 239               		.ident	"GCC: (GNU) 13.2.0"
+ 240               	.global __do_copy_data
 DEFINED SYMBOLS
-                            *ABS*:0000000000000000 main.c
-     /tmp/ccJF4Qhm.s:2      *ABS*:000000000000003e __SP_H__
-     /tmp/ccJF4Qhm.s:3      *ABS*:000000000000003d __SP_L__
-     /tmp/ccJF4Qhm.s:4      *ABS*:000000000000003f __SREG__
-     /tmp/ccJF4Qhm.s:5      *ABS*:0000000000000000 __tmp_reg__
-     /tmp/ccJF4Qhm.s:6      *ABS*:0000000000000001 __zero_reg__
-     /tmp/ccJF4Qhm.s:10     .text.USART_Transmit:0000000000000000 USART_Transmit
-     /tmp/ccJF4Qhm.s:25     .text.USART_Receive:0000000000000000 USART_Receive
-     /tmp/ccJF4Qhm.s:44     .text.armedState:0000000000000000 armedState
-     /tmp/ccJF4Qhm.s:80     .text.getInputState:0000000000000000 getInputState
-     /tmp/ccJF4Qhm.s:114    .text.unlockedState:0000000000000000 unlockedState
-     /tmp/ccJF4Qhm.s:140    .text.alarmState:0000000000000000 alarmState
-     /tmp/ccJF4Qhm.s:228    .data.uart_output:0000000000000000 uart_output
-     /tmp/ccJF4Qhm.s:169    .text.startup.main:0000000000000000 main
-     /tmp/ccJF4Qhm.s:217    .data.uart_input:0000000000000000 uart_input
+                            *ABS*:00000000 main.c
+     /tmp/ccHB4sks.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccHB4sks.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccHB4sks.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccHB4sks.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccHB4sks.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccHB4sks.s:10     .text.USART_Transmit:00000000 USART_Transmit
+     /tmp/ccHB4sks.s:25     .text.USART_Receive:00000000 USART_Receive
+     /tmp/ccHB4sks.s:44     .text.armedState:00000000 armedState
+     /tmp/ccHB4sks.s:56     .text.armedState:00000010 L0
+     /tmp/ccHB4sks.s:80     .text.getInputState:00000000 getInputState
+     /tmp/ccHB4sks.s:114    .text.unlockedState:00000000 unlockedState
+     /tmp/ccHB4sks.s:142    .text.alarmState:00000000 alarmState
+     /tmp/ccHB4sks.s:159    .text.alarmState:00000018 L0
+     /tmp/ccHB4sks.s:232    .data.uart_output:00000000 uart_output
+     /tmp/ccHB4sks.s:171    .text.startup.main:00000000 main
+     /tmp/ccHB4sks.s:221    .data.uart_input:00000000 uart_input
+     /tmp/ccHB4sks.s:15     .text.USART_Transmit:00000000 .L2
+     /tmp/ccHB4sks.s:30     .text.USART_Receive:00000000 .L6
+     /tmp/ccHB4sks.s:52     .text.armedState:00000006 .L11
+     /tmp/ccHB4sks.s:70     .text.armedState:0000002c .L9
+     /tmp/ccHB4sks.s:103    .text.getInputState:00000028 .L14
+     /tmp/ccHB4sks.s:129    .text.unlockedState:00000018 .L18
+     /tmp/ccHB4sks.s:155    .text.alarmState:0000000e .L12
+     /tmp/ccHB4sks.s:148    .text.alarmState:00000002 .L20
+     /tmp/ccHB4sks.s:213    .text.startup.main:0000005e .L23
+     /tmp/ccHB4sks.s:206    .text.startup.main:00000050 .L24
+     /tmp/ccHB4sks.s:210    .text.startup.main:00000058 .L30
+     /tmp/ccHB4sks.s:196    .text.startup.main:0000003e .L22
+     /tmp/ccHB4sks.s:199    .text.startup.main:00000042 .L28
 
 UNDEFINED SYMBOLS
 printf

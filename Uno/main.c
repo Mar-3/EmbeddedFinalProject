@@ -6,12 +6,14 @@
 #define BAUD 57600
 #define MYUBRR (FOSC/16/BAUD-1)
 
+
 #include <avr/io.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/setbaud.h>
 #include <string.h>
 #include "delay.h"
+
 
 
 // Board states in enum
@@ -22,8 +24,6 @@ enum boardStates {
   alarm
 };
 
-// NOTE: USART = Universal Synchronous Asynchronous Receiver Transmitter
-//       UART  = Universal Asynchronous Receiver Transmitter
 
 static void 
 USART_init(uint16_t ubrr) // unsigned int
@@ -34,11 +34,9 @@ USART_init(uint16_t ubrr) // unsigned int
     
     /* Enable receiver and transmitter on RX0 and TX0 */
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0); //NOTE: the ATmega328p has 1 UART: 0
-    // UCSR0B |= (1 << 4) | (1 << 3);
     
     /* Set frame format: 8 bit data, 2 stop bit */
     UCSR0C |= (1 << USBS0) | (3 << UCSZ00);
-    // UCSR0C |= (1 << 3) | (3 << 1);
     
 }
 
@@ -69,9 +67,7 @@ USART_Receive(FILE *stream)
 }
 
 // Setup the stream functions for UART
-FILE uart_output = FDEV_SETUP_STREAM(USART_Transmit, NULL, _FDEV_SETUP_WRITE);
-FILE uart_input = FDEV_SETUP_STREAM(NULL, USART_Receive, _FDEV_SETUP_READ);
-
+FILE uart_output = FDEV_SETUP_STREAM(USART_Transmit, NULL, _FDEV_SETUP_WRITE); FILE uart_input = FDEV_SETUP_STREAM(NULL, USART_Receive, _FDEV_SETUP_READ);
 
 int main(void) 
 {
@@ -87,19 +83,28 @@ int main(void)
 
     // set pin 8 on the arduino uno to output for the led
     DDRB |= (1 << PINB0);
+     
+    // SPI communication
+    // 
+    DDRB |= (1 << PINB4);
+    SPCR = (1 << 6);
 
+    uint8_t spi_send_data;
+    uint8_t spi_receive_data;
+
+    DELAY_ms(1000);
     while(1)
     {
-        _delay_ms(100);
         int sensorValue = PIND & (1 << PIND2);
-        if (sensorValue != 0) {
-            printf("Movement detected, switching to timer");
-            // activate led
-            PORTB |= (1 << PINB0);
-        } else {
-            // deactivate led
-            PORTB &= ~(1 << PINB0);
+        printf("%d", sensorValue);
+        spi_send_data = sensorValue;
+        
+        while(!(SPSR & (1 << SPIF)))
+        {
+            /* wait until the transmission is complete */
+            ;
         }
+        SPDR = spi_send_data; // send byte using SPI data register
+        DELAY_ms(200);
     }
-
-}
+    }

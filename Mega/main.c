@@ -90,11 +90,38 @@ armedState()
 {
     // listen for keypad input and signal from uno
     // if signal from uno, switch to TIMER
-    if (1 == 2) 
-    {
-        return TIMER;
+    uint8_t spi_send_data = "0";
+    uint8_t spi_receive_data;
+
+    uint8_t sensorDetectValue = 4;
+    
+    while (1) {
+
+        PORTB &= ~(1 << PB0); // SS LOW
+            
+        SPDR = spi_send_data;
+        while(!(SPSR & (1 << SPIF)))
+        {
+            /* wait until the transmission is complete */
+            ;
+        }
+        
+        spi_receive_data = SPDR;
+        printf("%u\n", spi_receive_data);
+            
+            
+        PORTB |= (1 << PB0); // SS HIGH
+        
+        // If true value from Uno, break from loop and switch to TIMER state
+            
+        if (spi_receive_data == sensorDetectValue) {
+            printf("Timer started");
+            return TIMER;
+            break;
+        }
+        DELAY_ms(1000);
     }
-    return ARMED;
+    return TIMER;
 }
 
 enum STATE 
@@ -110,7 +137,9 @@ timerState()
     // add key to input
     input[inputIndex] = key;
     inputIndex++;
-    _delay_ms(300);
+    PORTH |= (1 << PINH6);
+    _delay_ms(100);
+    PORTH &= ~(1 << PINH6);
     printf("Key: %c\n", key);
     key = NULL;
 
@@ -164,17 +193,23 @@ main(void)
     DDRH |= (1 << PINH6);
 
     // init state
-    enum STATE state = TIMER;
+    enum STATE state = ARMED;
     #pragma endregion
+
+    // SPI setup
+    DDRB |= (1 << PINB0) | (1 << PINB1) | (1 << PINB2);
+    SPCR |= (1 << 6) | (1 << 4);
+    SPCR |= (1 << 0);
+
 
 
     // main program loop
     while (1)
     {
+        printf("%d", state);
         switch (state)
         {
             case ARMED:
-                printf("ARMED\n");
                 state = armedState();
                 break;
             case TIMER:
@@ -184,13 +219,16 @@ main(void)
                 // empty the input buffer
                 memset(input, 0, sizeof(input));
                 inputIndex = 0;
-                printf("UNLOCKED\n");
                 // turn on the unlocked pin
                 PORTH |= (1 << PINH6);
-                state = UNLOCKED;
+                // wait for A key from keypad to arm again
+                while (KEYPAD_GetKey() != 'A') {
+                    ;
+                }
+                PORTH &= ~(1 << PINH6);
+                state = ARMED;
                 break;
             case ALARM:
-                printf("ALARM\n");
                 state = alarmState();
                 // Buzzer
                 break;
