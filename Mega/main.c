@@ -32,9 +32,6 @@ char password[4] = {'1', '2', '3', '4'};
 char input[4];
 int inputIndex = 0;
 
-// Timer interrupts
-
-
 
 #pragma region USART
 static void 
@@ -95,6 +92,7 @@ armedState()
 
     uint8_t sensorDetectValue = 4;
     
+    
     while (1) {
 
         PORTB &= ~(1 << PB0); // SS LOW
@@ -153,13 +151,13 @@ timerState()
     PORTH |= (1 << PINH6);
     DELAY_ms(5);
     PORTH &= ~(1 << PINH6);
-    // add key to input
-    input[inputIndex] = key;
-    inputIndex++;
-    printf("Key: %c\n", key);
-    key = NULL;
-
-    if (inputIndex == 4)
+    // Backspace, reduce index by one and return
+    if (key == '*' && inputIndex > 0) {
+        inputIndex--;
+        key == NULL;
+        return TIMER;
+    } 
+    else if (inputIndex == 4 && key == "#") // If 4 digits inputted and enter (#) pressed, check the password
     {
         // check if input is correct
         bool correct = true;
@@ -174,20 +172,31 @@ timerState()
         {
             return UNLOCKED;
         } else {
-            return ALARM;
+            // Wrong password, led and buzzer on for 5 milliseconds, reset index
+            inputIndex = 0;
+            PORTB |= (1 << PINB4);
+            DELAY_ms(5);
+            PORTB &= ~(1<<PINB4);
+            return TIMER;
         }
-
     }
-
+    else {
+        input[inputIndex] = key;
+        inputIndex++;
+        printf("Key: %c\n", key);
+    }
+    // Reset key to null
+    key = NULL;
    return TIMER; 
 }
 
 enum STATE 
 alarmState()
 {
-    // activate the buzzer
+    // activate the buzzer and return to TIMER
+    // Buzzer on until correct password
     PORTB |= (1 << PINB4);
-    return ALARM;
+    return TIMER;
 }
 
 ISR (TIMER3_COMPA_vect) // Timer 1 ISR
@@ -196,11 +205,9 @@ ISR (TIMER3_COMPA_vect) // Timer 1 ISR
     TCNT3 = 0;
     seconds++;
     printf("%d\n", seconds);
-    if (seconds > 9) {
+    if (seconds > 9) { // 10 seconds passed, turn timer off and alarm on.
         printf("ALARM");
-        while (1) {
-            alarmState();
-        }
+        alarmState();
     }
 }
 
@@ -260,6 +267,8 @@ main(void)
                 PORTH |= (1 << PINH6);
                 // Turn off timer pin
                 PORTH &= ~(1<< PINH5);
+                // Turn off buzzer and alarm
+                PORTB &= ~(1<<PINB4);
                 // wait for A key from keypad to arm again
                 while (KEYPAD_GetKey() != 'A') {
                     ;
