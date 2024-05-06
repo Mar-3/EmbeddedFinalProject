@@ -33,6 +33,7 @@ char input[4];
 int inputIndex = 0;
 
 
+// Course material UART setup is used
 #pragma region USART
 static void 
 USART_init(uint16_t ubrr) // unsigned int

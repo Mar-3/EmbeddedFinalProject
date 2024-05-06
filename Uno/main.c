@@ -25,6 +25,7 @@ enum boardStates {
 };
 
 
+// Course material UART setup is used
 static void 
 USART_init(uint16_t ubrr) // unsigned int
 {
