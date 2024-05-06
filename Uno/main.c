@@ -107,4 +107,4 @@ int main(void)
         SPDR = spi_send_data; // send byte using SPI data register
         DELAY_ms(200);
     }
-    }
+}   

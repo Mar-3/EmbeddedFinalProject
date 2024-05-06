@@ -162,15 +162,16 @@ timerState()
         inputIndex--;
         printf("backspace, index:%d", inputIndex);
         key == NULL;
+        printf("Current input:%c%c%c%c", input[0], input[1], input[2], input[3]);
         return TIMER;
     } 
     else if (key == '#') //enter (#) pressed, check the password
     {
         if (inputIndex < 3) {
             printf("Inputindex too low! (%d) reset\n", inputIndex);
-            PORTB |= (1 << PINB4);
+            PORTB ^= (1 << PINB4);
             DELAY_ms(10);
-            PORTB &= ~(1 << PINB4);
+            PORTB ^= (1 << PINB4);
             inputIndex = 0;
             return TIMER;
         }
@@ -191,26 +192,26 @@ timerState()
         } else {
             printf("WRONG PASSWORD\n");
             // Wrong password, led and buzzer on for 10 milliseconds, reset index
-            inputIndex = 0;
-            PORTB |= (1 << PINB4);
+            PORTB ^= (1 << PINB4);
             DELAY_ms(10);
-            PORTB &= ~(1 << PINB4);
-            return TIMER;
+            PORTB ^= (1 << PINB4);
+            inputIndex = 0;
+            return ALARM;
         }
     }
     else {
         if (inputIndex > 3) {
             // Too many inputs, reset the input.
             printf("Max input index, reset.\n");
-            PORTB |= (1 << PINB4);
+            PORTB ^= (1 << PINB4);
             DELAY_ms(10);
-            PORTB &= ~(1 << PINB4);
+            PORTB ^= (1 << PINB4);
             inputIndex = 0;
             return TIMER;
         }
         input[inputIndex] = key;
         inputIndex++;
-        printf("%d", inputIndex);
+        printf("Current input:%c%c%c%c", input[0], input[1], input[2], input[3]);
     }
     // Reset key to null
     key = NULL;
@@ -222,6 +223,10 @@ alarmState()
 {
     // activate the buzzer and return to TIMER
     // Buzzer on until correct password
+    printf("ALARM");
+    // Turn timer off
+    TCCR3B &= 0x00;
+    
     PORTB |= (1 << PINB4);
     return TIMER;
 }
@@ -232,10 +237,7 @@ ISR (TIMER3_COMPA_vect) // Timer 1 ISR
     TCNT3 = 0;
     seconds++;
     if (seconds > 9) { // 10 seconds passed, alarm on.
-        printf("ALARM");
         alarmState();
-        // Turn timer off
-        TCCR3B &= 0x00;
     }
 }
 
