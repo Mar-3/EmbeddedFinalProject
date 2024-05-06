@@ -7,6 +7,7 @@
 #define MYUBRR (FOSC/16/BAUD-1)
 
 #include <avr/io.h>
+#include <avr/interrupt.h>/
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/setbaud.h>
@@ -16,6 +17,9 @@
 
 #define READ_PIN(port, pin) (PIN ## port & (1 << PIN ## pin))
 
+
+
+
 // Board states in enum
 enum STATE {
     ARMED,
@@ -24,16 +28,17 @@ enum STATE {
     ALARM
 };
 
-char keypad[4][4] = {
-    {'1', '2', '3', 'A'},
-    {'4', '5', '6', 'B'},
-    {'7', '8', '9', 'C'},
-    {'*', '0', '#', 'D'}
-};
+// nasty global variables
+int seconds = 0;
+
 
 char password[4] = {'1', '2', '3', '4'};
 char input[4];
 int inputIndex = 0;
+
+// Timer interrupts
+
+
 
 #pragma region USART
 static void 
@@ -117,7 +122,6 @@ armedState()
         if (spi_receive_data == sensorDetectValue) {
             printf("Timer started");
             return TIMER;
-            break;
         }
         DELAY_ms(1000);
     }
@@ -127,8 +131,6 @@ armedState()
 enum STATE 
 timerState()
 {
-   // TODO: start timer for 10 seconds
-
     uint8_t key = KEYPAD_GetKey();
     if (key == NULL)
     {
@@ -138,7 +140,7 @@ timerState()
     input[inputIndex] = key;
     inputIndex++;
     PORTH |= (1 << PINH6);
-    _delay_ms(100);
+    DELAY_ms(10);
     PORTH &= ~(1 << PINH6);
     printf("Key: %c\n", key);
     key = NULL;
@@ -154,13 +156,13 @@ timerState()
                 correct = false;
             }
         }
-
         if (correct)
         {
             return UNLOCKED;
         } else {
             return ALARM;
         }
+
     }
 
    return TIMER; 
@@ -170,8 +172,21 @@ enum STATE
 alarmState()
 {
     // activate the buzzer
-    PORTB ^= (1 << PINB4);
+    PORTB |= (1 << PINB4);
     return ALARM;
+}
+
+ISR (TIMER3_COMPA_vect) // Timer 1 ISR
+{
+    printf("%d", seconds);
+    PORTH ^= (1 << PINH5);
+    TCNT3 = 0;
+    seconds++;
+    if (seconds > 9) {
+        while (1) {
+            alarmState();
+        }
+    }
 }
 
 int 
@@ -192,8 +207,13 @@ main(void)
     // set unlock pin to output
     DDRH |= (1 << PINH6);
 
-    // init state
+    // Set the timer led pin to output
+    DDRH |= (1 << PINH5);
+    
+    // Initial state to armed
     enum STATE state = ARMED;
+
+    // init state
     #pragma endregion
 
     // SPI setup
@@ -213,9 +233,27 @@ main(void)
                 state = armedState();
                 break;
             case TIMER:
+                // Set up timer interrupts
+                DDRE |= (1 << PE3);
+                // Enable interrupts
+                sei();
+                
+                TCCR3B = 0;
+                TCNT3 = 0;
+                TCCR3A |= (1 << 6);
+                OCR3A = 15625;
+                TCCR3B |= 0b000000101;
+
+                
+                TIMSK3 |= (1 << 1);
+
+                // Set up timer led;
+                DDRA |= (1 << PINA2);
                 state = timerState();
                 break;
             case UNLOCKED:
+                TCCR3A |= 0x00;
+                DDRE |= 0x00;
                 // empty the input buffer
                 memset(input, 0, sizeof(input));
                 inputIndex = 0;
