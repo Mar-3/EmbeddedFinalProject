@@ -118,8 +118,27 @@ armedState()
         PORTB |= (1 << PB0); // SS HIGH
         
         // If true value from Uno, break from loop and switch to TIMER state
-            
         if (spi_receive_data == sensorDetectValue) {
+
+            // Set up timer interrupts
+            DDRE |= (1 << PE3);
+            // Enable interrupts
+            sei();
+            // Clear registers for timer
+            TCCR3A = 0;
+            TCCR3B = 0;
+            TCNT3 = 0;
+
+            // CTC
+            OCR3A = 15624;
+            
+            // Prescaler 1024, bits CS32 and CS30 on.
+            TCCR3B |= 0b000000101;
+            // Output compare Match A interrupt enable
+            TIMSK3 |= (1 << 1);
+
+            // Set up timer led;
+            PORTH |= (1 << PINH5);
             printf("Timer started");
             return TIMER;
         }
@@ -136,12 +155,12 @@ timerState()
     {
         return TIMER;
     }
+    PORTH |= (1 << PINH6);
+    DELAY_ms(5);
+    PORTH &= ~(1 << PINH6);
     // add key to input
     input[inputIndex] = key;
     inputIndex++;
-    PORTH |= (1 << PINH6);
-    DELAY_ms(10);
-    PORTH &= ~(1 << PINH6);
     printf("Key: %c\n", key);
     key = NULL;
 
@@ -178,11 +197,12 @@ alarmState()
 
 ISR (TIMER3_COMPA_vect) // Timer 1 ISR
 {
-    printf("%d", seconds);
     PORTH ^= (1 << PINH5);
     TCNT3 = 0;
     seconds++;
+    printf("%d\n", seconds);
     if (seconds > 9) {
+        printf("ALARM");
         while (1) {
             alarmState();
         }
@@ -210,6 +230,8 @@ main(void)
     // Set the timer led pin to output
     DDRH |= (1 << PINH5);
     
+    // Set up timer led pin to output
+    DDRA |= (1 << PINA2);
     // Initial state to armed
     enum STATE state = ARMED;
 
@@ -233,37 +255,28 @@ main(void)
                 state = armedState();
                 break;
             case TIMER:
-                // Set up timer interrupts
-                DDRE |= (1 << PE3);
-                // Enable interrupts
-                sei();
-                
-                TCCR3B = 0;
-                TCNT3 = 0;
-                TCCR3A |= (1 << 6);
-                OCR3A = 15625;
-                TCCR3B |= 0b000000101;
-
-                
-                TIMSK3 |= (1 << 1);
-
-                // Set up timer led;
-                DDRA |= (1 << PINA2);
+;
                 state = timerState();
                 break;
             case UNLOCKED:
-                TCCR3A |= 0x00;
-                DDRE |= 0x00;
+                TCCR3B &= 0x00;
                 // empty the input buffer
                 memset(input, 0, sizeof(input));
                 inputIndex = 0;
                 // turn on the unlocked pin
                 PORTH |= (1 << PINH6);
+                // Turn off timer pin
+                PORTH &= ~(1<< PINH5);
                 // wait for A key from keypad to arm again
                 while (KEYPAD_GetKey() != 'A') {
                     ;
                 }
+
+                // Reset unlocked pin
+
                 PORTH &= ~(1 << PINH6);
+                // Reset timer second counter
+                seconds = 0;
                 state = ARMED;
                 break;
             case ALARM:
