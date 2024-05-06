@@ -7,17 +7,13 @@
 #define MYUBRR (FOSC/16/BAUD-1)
 
 #include <avr/io.h>
-#include <avr/interrupt.h>/
+#include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/setbaud.h>
 #include <string.h>
 #include "delay.h"
 #include "keypad.h"
-
-#define READ_PIN(port, pin) (PIN ## port & (1 << PIN ## pin))
-
-
 
 
 // Board states in enum
@@ -93,7 +89,6 @@ FILE uart_input = FDEV_SETUP_STREAM(NULL, USART_Receive, _FDEV_SETUP_READ);
 enum STATE 
 armedState()
 {
-    // listen for keypad input and signal from uno
     // if signal from uno, switch to TIMER
     uint8_t spi_send_data = "0";
     uint8_t spi_receive_data;
@@ -235,7 +230,6 @@ main(void)
     // Initial state to armed
     enum STATE state = ARMED;
 
-    // init state
     #pragma endregion
 
     // SPI setup
@@ -255,7 +249,6 @@ main(void)
                 state = armedState();
                 break;
             case TIMER:
-;
                 state = timerState();
                 break;
             case UNLOCKED:
@@ -287,6 +280,4 @@ main(void)
                 break;
         }
     }
-
-
 }
