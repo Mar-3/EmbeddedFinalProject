@@ -1,0 +1,148 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               		.section	.text.USART_Transmit,"ax",@progbits
+  10               	USART_Transmit:
+  11               	/* prologue: function */
+  12               	/* frame size = 0 */
+  13               	/* stack size = 0 */
+  14               	.L__stack_usage = 0
+  15               	.L2:
+  16 0000 9091 C000 		lds r25,192
+  17 0004 95FF      		sbrs r25,5
+  18 0006 00C0      		rjmp .L2
+  19 0008 8093 C600 		sts 198,r24
+  20               	/* epilogue start */
+  21 000c 0895      		ret
+  23               		.section	.text.USART_Receive,"ax",@progbits
+  25               	USART_Receive:
+  26               	/* prologue: function */
+  27               	/* frame size = 0 */
+  28               	/* stack size = 0 */
+  29               	.L__stack_usage = 0
+  30               	.L6:
+  31 0000 8091 C000 		lds r24,192
+  32 0004 85FF      		sbrs r24,5
+  33 0006 00C0      		rjmp .L6
+  34 0008 8091 C600 		lds r24,198
+  35               	/* epilogue start */
+  36 000c 0895      		ret
+  38               		.section	.rodata.main.str1.1,"aMS",@progbits,1
+  39               	.LC0:
+  40 0000 2564 00   		.string	"%d"
+  41               		.section	.text.startup.main,"ax",@progbits
+  42               	.global	main
+  44               	main:
+  45               	/* prologue: function */
+  46               	/* frame size = 0 */
+  47               	/* stack size = 0 */
+  48               	.L__stack_usage = 0
+  49 0000 1092 C500 		sts 197,__zero_reg__
+  50 0004 80E1      		ldi r24,lo8(16)
+  51 0006 8093 C400 		sts 196,r24
+  52 000a 8091 C100 		lds r24,193
+  53 000e 8861      		ori r24,lo8(24)
+  54 0010 8093 C100 		sts 193,r24
+  55 0014 8091 C200 		lds r24,194
+  56 0018 8E60      		ori r24,lo8(14)
+  57 001a 8093 C200 		sts 194,r24
+  58 001e 80E0      		ldi r24,lo8(uart_output)
+  59 0020 90E0      		ldi r25,hi8(uart_output)
+  60 0022 9093 0000 		sts __iob+2+1,r25
+  61 0026 8093 0000 		sts __iob+2,r24
+  62 002a 80E0      		ldi r24,lo8(uart_input)
+  63 002c 90E0      		ldi r25,hi8(uart_input)
+  64 002e 9093 0000 		sts __iob+1,r25
+  65 0032 8093 0000 		sts __iob,r24
+  66 0036 5298      		cbi 0xa,2
+  67 0038 209A      		sbi 0x4,0
+  68 003a 249A      		sbi 0x4,4
+  69 003c 80E4      		ldi r24,lo8(64)
+  70 003e 8CBD      		out 0x2c,r24
+  71 0040 2FEF      		ldi r18,lo8(3199999)
+  72 0042 83ED      		ldi r24,hi8(3199999)
+  73 0044 90E3      		ldi r25,hlo8(3199999)
+  74 0046 2150      	1:	subi r18,1
+  75 0048 8040      		sbci r24,0
+  76 004a 9040      		sbci r25,0
+  77 004c 01F4      		brne 1b
+  78 004e 00C0      		rjmp .
+  79 0050 0000      		nop
+  80 0052 00E0      		ldi r16,lo8(.LC0)
+  81 0054 10E0      		ldi r17,hi8(.LC0)
+  82               	.L11:
+  83 0056 C9B1      		in r28,0x9
+  84 0058 C470      		andi r28,lo8(4)
+  85 005a 1F92      		push __zero_reg__
+  86 005c CF93      		push r28
+  87 005e 1F93      		push r17
+  88 0060 0F93      		push r16
+  89 0062 0E94 0000 		call printf
+  90 0066 0F90      		pop __tmp_reg__
+  91 0068 0F90      		pop __tmp_reg__
+  92 006a 0F90      		pop __tmp_reg__
+  93 006c 0F90      		pop __tmp_reg__
+  94               	.L10:
+  95 006e 0DB4      		in __tmp_reg__,0x2d
+  96 0070 07FE      		sbrs __tmp_reg__,7
+  97 0072 00C0      		rjmp .L10
+  98 0074 CEBD      		out 0x2e,r28
+  99 0076 2FEF      		ldi r18,lo8(639999)
+ 100 0078 83EC      		ldi r24,hi8(639999)
+ 101 007a 99E0      		ldi r25,hlo8(639999)
+ 102 007c 2150      	1:	subi r18,1
+ 103 007e 8040      		sbci r24,0
+ 104 0080 9040      		sbci r25,0
+ 105 0082 01F4      		brne 1b
+ 106 0084 00C0      		rjmp .
+ 107 0086 0000      		nop
+ 108 0088 00C0      		rjmp .L11
+ 110               	.global	uart_input
+ 111               		.section	.data.uart_input,"aw"
+ 114               	uart_input:
+ 115 0000 0000 00   		.zero	3
+ 116 0003 01        		.byte	1
+ 117 0004 0000 0000 		.zero	4
+ 118 0008 0000      		.word	0
+ 119 000a 0000      		.word	gs(USART_Receive)
+ 120 000c 0000      		.word	0
+ 121               	.global	uart_output
+ 122               		.section	.data.uart_output,"aw"
+ 125               	uart_output:
+ 126 0000 0000 00   		.zero	3
+ 127 0003 02        		.byte	2
+ 128 0004 0000 0000 		.zero	4
+ 129 0008 0000      		.word	gs(USART_Transmit)
+ 130 000a 0000      		.word	0
+ 131 000c 0000      		.word	0
+ 132               		.ident	"GCC: (GNU) 13.2.0"
+ 133               	.global __do_copy_data
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/ccCy4nPC.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccCy4nPC.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccCy4nPC.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccCy4nPC.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccCy4nPC.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccCy4nPC.s:10     .text.USART_Transmit:00000000 USART_Transmit
+     /tmp/ccCy4nPC.s:25     .text.USART_Receive:00000000 USART_Receive
+     /tmp/ccCy4nPC.s:44     .text.startup.main:00000000 main
+     /tmp/ccCy4nPC.s:125    .data.uart_output:00000000 uart_output
+     /tmp/ccCy4nPC.s:114    .data.uart_input:00000000 uart_input
+     /tmp/ccCy4nPC.s:78     .text.startup.main:00000050 L0
+     /tmp/ccCy4nPC.s:106    .text.startup.main:00000086 L0
+     /tmp/ccCy4nPC.s:15     .text.USART_Transmit:00000000 .L2
+     /tmp/ccCy4nPC.s:30     .text.USART_Receive:00000000 .L6
+     /tmp/ccCy4nPC.s:74     .text.startup.main:00000046 .L11
+     /tmp/ccCy4nPC.s:94     .text.startup.main:0000006e .L10
+     /tmp/ccCy4nPC.s:102    .text.startup.main:0000007c .L12
+     /tmp/ccCy4nPC.s:82     .text.startup.main:00000056 .L11
+
+UNDEFINED SYMBOLS
+__iob
+printf
+__do_copy_data

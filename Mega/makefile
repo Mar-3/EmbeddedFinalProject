@@ -9,13 +9,13 @@ NM = avr-nm
 AVRDUDE = avrdude
 REMOVE = rm -f
 
-MCU = atmega328p
+MCU = atmega2560
 F_CPU = 8000000
 
 LFUSE = 0x9f
 HFUSE = 0xd1
 
-TARGET = unoFirmware
+TARGET = megaFirmware
 SRC = main.c keypad.c delay.c
 OBJ = $(SRC:.c=.o)
 LST = $(SRC:.c=.lst)
@@ -39,7 +39,7 @@ CFLAGS += -Wa,-adhlns=$(<:.c=.lst)
 LDFLAGS = -Wl,--gc-sections
 LDFLAGS += -Wl,--print-gc-sections
 
-AVRDUDE_MCU = atmega328p
+AVRDUDE_MCU = atmega2560
 AVRDUDE_PROGRAMMER = arduino
 AVRDUDE_SPEED = -B9600
 

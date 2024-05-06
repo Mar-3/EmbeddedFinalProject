@@ -41,16 +41,17 @@ Errors and omissions should be reported to codelibraries@exploreembedded.com
 #ifndef _KEYPAD_H
 #define _KEYPAD_H
 
-#include <avr/io.h>
+#include "io.h"
 #include "stdutils.h"
+
 
 
 /***************************************************************************************************
                                  Hex-Keypad PORT Configuration
  ***************************************************************************************************/
-#define M_RowColDirection DDRK       //PORT Direction Configuration for keypad
-#define M_ROW PORTK                  //Higher four bits of PORT are used as ROWs
-#define M_COL PINK                   //Lower four bits of PORT are used as COLs
+#define M_RowColDirection DDRD       //PORT Direction Configuration for keypad
+#define M_ROW PORTD                  //Higher four bits of PORT are used as ROWs
+#define M_COL PIND                   //Lower four bits of PORT are used as COLs
 #define C_RowOutputColInput_U8 0xf0	 //value to configure Rows as Output and Columns as Input
 /**************************************************************************************************/
 

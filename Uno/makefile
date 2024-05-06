@@ -16,7 +16,7 @@ LFUSE = 0x9f
 HFUSE = 0xd1
 
 TARGET = unoFirmware
-SRC = main.c keypad.c delay.c
+SRC = main.c delay.c
 OBJ = $(SRC:.c=.o)
 LST = $(SRC:.c=.lst)
 
