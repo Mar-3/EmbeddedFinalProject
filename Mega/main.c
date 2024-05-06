@@ -44,7 +44,7 @@ USART_init(uint16_t ubrr) // unsigned int
     /* Enable receiver and transmitter on RX0 and TX0 */
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0); //NOTE: the ATmega328p has 1 UART: 0
     // UCSR0B |= (1 << 4) | (1 << 3);
-    
+   
     /* Set frame format: 8 bit data, 2 stop bit */
     UCSR0C |= (1 << USBS0) | (3 << UCSZ00);
     // UCSR0C |= (1 << 3) | (3 << 1);
@@ -143,23 +143,40 @@ armedState()
 enum STATE 
 timerState()
 {
+    // Get key from keypad input
     uint8_t key = KEYPAD_GetKey();
+
+    // Return to start of timer if NULL
     if (key == NULL)
     {
         return TIMER;
-    }
+    } 
+    // Key was pressed, show green led for 5ms
     PORTH |= (1 << PINH6);
     DELAY_ms(5);
     PORTH &= ~(1 << PINH6);
+    printf("pressed: %c\n", key);
+
     // Backspace, reduce index by one and return
     if (key == '*' && inputIndex > 0) {
         inputIndex--;
+        printf("backspace, index:%d", inputIndex);
         key == NULL;
         return TIMER;
     } 
-    else if (inputIndex == 4 && key == "#") // If 4 digits inputted and enter (#) pressed, check the password
+    else if (key == '#') //enter (#) pressed, check the password
     {
+        if (inputIndex < 3) {
+            printf("Inputindex too low! (%d) reset\n", inputIndex);
+            PORTB |= (1 << PINB4);
+            DELAY_ms(10);
+            PORTB &= ~(1 << PINB4);
+            inputIndex = 0;
+            return TIMER;
+        }
         // check if input is correct
+        printf("checking input\n");
+        
         bool correct = true;
         for (int i = 0; i < 4; i++)
         {
@@ -172,18 +189,28 @@ timerState()
         {
             return UNLOCKED;
         } else {
-            // Wrong password, led and buzzer on for 5 milliseconds, reset index
+            printf("WRONG PASSWORD\n");
+            // Wrong password, led and buzzer on for 10 milliseconds, reset index
             inputIndex = 0;
             PORTB |= (1 << PINB4);
-            DELAY_ms(5);
-            PORTB &= ~(1<<PINB4);
+            DELAY_ms(10);
+            PORTB &= ~(1 << PINB4);
             return TIMER;
         }
     }
     else {
+        if (inputIndex > 3) {
+            // Too many inputs, reset the input.
+            printf("Max input index, reset.\n");
+            PORTB |= (1 << PINB4);
+            DELAY_ms(10);
+            PORTB &= ~(1 << PINB4);
+            inputIndex = 0;
+            return TIMER;
+        }
         input[inputIndex] = key;
         inputIndex++;
-        printf("Key: %c\n", key);
+        printf("%d", inputIndex);
     }
     // Reset key to null
     key = NULL;
@@ -204,10 +231,11 @@ ISR (TIMER3_COMPA_vect) // Timer 1 ISR
     PORTH ^= (1 << PINH5);
     TCNT3 = 0;
     seconds++;
-    printf("%d\n", seconds);
-    if (seconds > 9) { // 10 seconds passed, turn timer off and alarm on.
+    if (seconds > 9) { // 10 seconds passed, alarm on.
         printf("ALARM");
         alarmState();
+        // Turn timer off
+        TCCR3B &= 0x00;
     }
 }
 
@@ -249,7 +277,6 @@ main(void)
     // main program loop
     while (1)
     {
-        printf("%d", state);
         switch (state)
         {
             case ARMED:
@@ -273,9 +300,7 @@ main(void)
                 while (KEYPAD_GetKey() != 'A') {
                     ;
                 }
-
                 // Reset unlocked pin
-
                 PORTH &= ~(1 << PINH6);
                 // Reset timer second counter
                 seconds = 0;
